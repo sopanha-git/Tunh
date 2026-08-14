@@ -32,6 +32,7 @@ export interface EmotionConfig {
   label: string
   icon: string
   description: string
+  color: string // signal hue used across the console for this emotion
 }
 
 // Character configuration

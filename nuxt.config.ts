@@ -2,8 +2,23 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
-  
+
+  // This project uses the Nuxt 3-style flat layout (app.vue, pages/, components/,
+  // composables/, assets/ at the project root). Nuxt 4 defaults srcDir to 'app/',
+  // so pin it back to the root, otherwise the real app is ignored in favour of
+  // the leftover app/ scaffold and '~/assets/css/main.css' fails to resolve.
+  srcDir: '.',
+
   css: ['~/assets/css/main.css'],
+
+  // Nuxt manages its own PostCSS pipeline and ignores a root postcss.config.*,
+  // so Tailwind/autoprefixer must be declared here to actually run.
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
   
 
   
@@ -37,7 +52,8 @@ export default defineNuxtConfig({
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' },
+        // Display: Bricolage Grotesque · Body: Inter · HUD/data: JetBrains Mono
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap' },
       ],
     },
   },

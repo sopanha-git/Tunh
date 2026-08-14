@@ -19,6 +19,17 @@ export function useTextToSpeech() {
   // Audio element reference
   let audioElement: HTMLAudioElement | null = null
 
+  // Release the current audio URL. Only object URLs (blob:) need revoking;
+  // the API returns data: URLs, which must not be passed to revokeObjectURL.
+  const releaseAudioUrl = () => {
+    if (audioUrl.value) {
+      if (audioUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl.value)
+      }
+      audioUrl.value = null
+    }
+  }
+
   // Validate request
   const validateRequest = (request: TextToSpeechRequest): string | null => {
     if (!request.text || request.text.trim().length === 0) {
@@ -46,10 +57,7 @@ export function useTextToSpeech() {
     error.value = null
     
     // Clean up previous audio
-    if (audioUrl.value) {
-      URL.revokeObjectURL(audioUrl.value)
-      audioUrl.value = null
-    }
+    releaseAudioUrl()
 
     // Validate
     const validationError = validateRequest(request)
@@ -89,10 +97,7 @@ export function useTextToSpeech() {
   const reset = () => {
     status.value = 'idle'
     error.value = null
-    if (audioUrl.value) {
-      URL.revokeObjectURL(audioUrl.value)
-      audioUrl.value = null
-    }
+    releaseAudioUrl()
     audioDuration.value = 0
     playerState.value = {
       isPlaying: false,

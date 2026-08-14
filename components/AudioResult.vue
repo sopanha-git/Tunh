@@ -49,12 +49,13 @@ const togglePlay = () => {
 </script>
 
 <template>
-  <div v-if="audioUrl" class="card p-6">
+  <div v-if="audioUrl" class="panel p-6">
+    <p class="eyebrow mb-4">Output · take one</p>
     <div class="flex items-center gap-4 mb-4">
       <!-- Play/Pause button -->
       <button
         @click="togglePlay"
-        class="w-14 h-14 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full transition-all duration-200 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:scale-105 active:scale-95"
+        class="w-14 h-14 flex items-center justify-center bg-accent text-ink rounded-full transition-transform duration-200 glow-accent hover:scale-105 active:scale-95"
       >
         <svg v-if="playerState.isPlaying" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <rect x="6" y="4" width="4" height="16" rx="1" />
@@ -67,14 +68,14 @@ const togglePlay = () => {
 
       <!-- Info -->
       <div class="flex-1">
-        <h3 class="text-sm font-semibold text-surface-900">Generated Voice</h3>
-        <p class="text-xs text-surface-500">{{ formatTime(playerState.currentTime) }} / {{ formatTime(playerState.duration || duration) }}</p>
+        <h3 class="font-display text-sm font-semibold text-text">Generated voice</h3>
+        <p class="hud mt-0.5">{{ formatTime(playerState.currentTime) }} / {{ formatTime(playerState.duration || duration) }}</p>
       </div>
 
       <!-- Download button -->
       <button
         @click="$emit('download')"
-        class="p-3 text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200"
+        class="key p-3 text-muted hover:text-accent"
         title="Download audio"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +84,7 @@ const togglePlay = () => {
       </button>
     </div>
 
-    <!-- Progress bar -->
+    <!-- Scrubber -->
     <div class="relative">
       <input
         type="range"
@@ -91,11 +92,7 @@ const togglePlay = () => {
         :max="playerState.duration || duration"
         :value="playerState.currentTime"
         @input="handleSeek"
-        class="w-full h-2 bg-surface-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
-      />
-      <div
-        class="absolute top-0 left-0 h-2 bg-primary-500 rounded-lg pointer-events-none"
-        :style="{ width: `${progress}%` }"
+        class="console-range"
       />
     </div>
 
