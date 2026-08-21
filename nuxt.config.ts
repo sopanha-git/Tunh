@@ -38,6 +38,13 @@ export default defineNuxtConfig({
     // Private keys (only available on server-side)
     voiceApiKey: process.env.VOICE_API_KEY || '',
     voiceApiUrl: process.env.VOICE_API_URL || '',
+    // Google Gemini TTS. When unset, the endpoint falls back to the mock tone.
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
+    geminiTtsModel: process.env.GEMINI_TTS_MODEL || 'gemini-2.5-flash-preview-tts',
+    // Self-hosted "local" TTS server. The endpoint POSTs the request to this URL
+    // when model === 'local'. Optional bearer token sent as Authorization.
+    localTtsUrl: process.env.LOCAL_TTS_URL || '',
+    localTtsKey: process.env.LOCAL_TTS_KEY || '',
 
     // Public keys (exposed to client-side)
     public: {

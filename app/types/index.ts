@@ -19,8 +19,13 @@ export type VoiceEmotion =
 // Speed options
 export type VoiceSpeed = 0.5 | 0.75 | 1.0 | 1.25 | 1.5 | 1.75 | 2.0
 
+// The synthesis engine backing a generation. `gemini` is the cloud provider;
+// `local` routes to a self-hosted TTS HTTP server (configurable URL).
+export type VoiceModel = 'gemini' | 'local'
+
 // Voice settings interface
 export interface VoiceSettings {
+  model: VoiceModel
   character: VoiceCharacter
   emotion: VoiceEmotion
   speed: VoiceSpeed
@@ -56,9 +61,19 @@ export interface SpeedConfig {
   label: string
 }
 
+// Model configuration. `kind` distinguishes a hosted cloud API from a
+// self-hosted local server so the UI can badge them differently.
+export interface ModelConfig {
+  id: VoiceModel
+  label: string
+  description: string
+  kind: 'cloud' | 'local'
+}
+
 // Text-to-speech request
 export interface TextToSpeechRequest {
   text: string
+  model: VoiceModel
   character: VoiceCharacter
   emotion: VoiceEmotion
   speed: VoiceSpeed

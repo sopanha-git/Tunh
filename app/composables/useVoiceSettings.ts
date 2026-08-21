@@ -1,4 +1,11 @@
-import type { VoiceSettings, VoiceCharacter, VoiceEmotion, VoiceSpeed, EmotionConfig, CharacterConfig, SpeedConfig } from '~/types'
+import type { VoiceSettings, VoiceCharacter, VoiceEmotion, VoiceSpeed, VoiceModel, EmotionConfig, CharacterConfig, SpeedConfig, ModelConfig } from '~/types'
+
+// Model configurations. The engine that synthesizes the audio. `gemini` is the
+// cloud default; `local` posts to a self-hosted TTS server (see LOCAL_TTS_URL).
+export const models: ModelConfig[] = [
+  { id: 'gemini', label: 'Gemini', description: 'Google cloud TTS', kind: 'cloud' },
+  { id: 'local', label: 'Local', description: 'Self-hosted server', kind: 'local' },
+]
 
 // Emotion configurations. `color` is the signal hue this emotion casts across
 // the whole console (the interface retints to the selected emotion).
@@ -52,6 +59,7 @@ export const speeds: SpeedConfig[] = [
 
 // Default voice settings
 export const defaultVoiceSettings: VoiceSettings = {
+  model: 'gemini',
   character: 'female',
   emotion: 'neutral',
   speed: 1.0,
@@ -60,6 +68,10 @@ export const defaultVoiceSettings: VoiceSettings = {
 // Composable for managing voice settings
 export function useVoiceSettings() {
   const settings = useState<VoiceSettings>('voice-settings', () => ({ ...defaultVoiceSettings }))
+
+  const setModel = (model: VoiceModel) => {
+    settings.value.model = model
+  }
 
   const setCharacter = (character: VoiceCharacter) => {
     settings.value.character = character
@@ -77,7 +89,11 @@ export function useVoiceSettings() {
     settings.value = { ...defaultVoiceSettings }
   }
 
-  const currentEmotion = computed(() => 
+  const currentModel = computed(() =>
+    models.find(m => m.id === settings.value.model)
+  )
+
+  const currentEmotion = computed(() =>
     emotions.find(e => e.id === settings.value.emotion)
   )
 
@@ -91,13 +107,16 @@ export function useVoiceSettings() {
 
   return {
     settings: readonly(settings),
+    models,
     emotions,
     characters,
     speeds,
+    setModel,
     setCharacter,
     setEmotion,
     setSpeed,
     resetSettings,
+    currentModel,
     currentEmotion,
     currentCharacter,
     currentSpeed,

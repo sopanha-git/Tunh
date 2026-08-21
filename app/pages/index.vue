@@ -6,7 +6,7 @@ import type { TextToSpeechRequest } from '~/types'
 
 useHead({ title: 'Voice Desk · Tunh' })
 const script = ref('')
-const { settings, setCharacter, setEmotion, setSpeed, currentEmotion, currentCharacter } = useVoiceSettings()
+const { settings, setModel, setCharacter, setEmotion, setSpeed, currentEmotion, currentCharacter, currentModel } = useVoiceSettings()
 const { status, error, audioUrl, audioDuration, isGenerating, generateVoice, reset, downloadAudio } = useTextToSpeech()
 const { user, clear } = useUserSession()
 const accent = computed(() => currentEmotion.value?.color || '#386ee8')
@@ -23,7 +23,7 @@ const statusMeta = computed(() => ({
 }[status.value]))
 
 async function handleGenerate() {
-  const request: TextToSpeechRequest = { text: script.value, character: settings.value.character, emotion: settings.value.emotion, speed: settings.value.speed }
+  const request: TextToSpeechRequest = { text: script.value, model: settings.value.model, character: settings.value.character, emotion: settings.value.emotion, speed: settings.value.speed }
   const response = await generateVoice(request)
   if (response.success && response.audioUrl) {
     nextTick(() => {
@@ -82,7 +82,7 @@ async function logout() { await $fetch('/api/auth/logout', { method: 'POST' }); 
               </span>
             </div>
             <div class="flex items-end justify-between font-mono text-[0.62rem] tracking-[0.14em] text-surface-300/70">
-              <span>CH <span class="text-surface-100">{{ currentCharacter?.label?.toUpperCase() }}</span> · EMO <span class="text-surface-100">{{ currentEmotion?.label?.toUpperCase() }}</span></span>
+              <span>ENG <span class="text-surface-100">{{ currentModel?.label?.toUpperCase() }}</span> · CH <span class="text-surface-100">{{ currentCharacter?.label?.toUpperCase() }}</span> · EMO <span class="text-surface-100">{{ currentEmotion?.label?.toUpperCase() }}</span></span>
               <span>RATE <span class="text-surface-100">{{ settings.speed.toFixed(2) }}×</span></span>
             </div>
           </div>
@@ -110,6 +110,8 @@ async function logout() { await $fetch('/api/auth/logout', { method: 'POST' }); 
               <button class="keycap p-2 text-surface-600" title="Reset settings" @click="resetSettings"><RotateCcw :size="17" /></button>
             </div>
             <div class="space-y-6">
+              <ModelSelector :model-value="settings.model" @update:model-value="setModel" />
+              <hr class="groove" />
               <CharacterSelector :model-value="settings.character" @update:model-value="setCharacter" />
               <hr class="groove" />
               <EmotionSelector :model-value="settings.emotion" @update:model-value="setEmotion" />

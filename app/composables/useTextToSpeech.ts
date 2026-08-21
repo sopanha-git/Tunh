@@ -38,6 +38,9 @@ export function useTextToSpeech() {
     if (request.text.length > 5000) {
       return 'Text is too long. Please keep it under 5000 characters'
     }
+    if (!request.model || (request.model !== 'gemini' && request.model !== 'local')) {
+      return 'Please select a model'
+    }
     if (!request.character) {
       return 'Please select a character'
     }
@@ -74,7 +77,9 @@ export function useTextToSpeech() {
       const response = await $fetch<TextToSpeechResponse>('/api/generate-voice', {
         method: 'POST',
         body: request,
-        timeout: 60000, // 60 second timeout
+        // The server may make up to two Gemini attempts (~45s each) before it
+        // gives up, so allow more headroom than a single attempt would need.
+        timeout: 110000,
       })
 
       if (response.success && response.audioUrl) {
@@ -114,7 +119,7 @@ export function useTextToSpeech() {
 
     const link = document.createElement('a')
     link.href = audioUrl.value
-    link.download = filename || `tunh-voice-${Date.now()}.mp3`
+    link.download = filename || `tunh-voice-${Date.now()}.wav`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

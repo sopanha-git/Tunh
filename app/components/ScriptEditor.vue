@@ -23,6 +23,7 @@ function clear() { emit('update:modelValue', ''); emit('clear') }
     <div class="relative">
       <textarea
         :value="modelValue" :maxlength="maxLength" rows="11"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
         class="w-full resize-y rounded-xl border border-surface-300 bg-surface-50 p-4 pr-12 text-base leading-7 text-surface-900 shadow-[inset_0_1px_3px_rgba(27,25,21,0.08)] placeholder:text-surface-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-100"
         placeholder="Type the line to be spoken. Punctuation shapes the breath — commas for short pauses, full stops for deliberate ones."
         @input="update"
