@@ -74,12 +74,17 @@ const frame = (advance: boolean) => {
   const mid = h / 2
   ctx.clearRect(0, 0, w, h)
 
-  // Baseline grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+  // Oscilloscope graticule — faint divisions, brighter centre cross.
   ctx.lineWidth = 1
+  ctx.strokeStyle = 'rgba(255,255,255,0.045)'
   ctx.beginPath()
-  ctx.moveTo(0, mid)
-  ctx.lineTo(w, mid)
+  for (let i = 1; i < 10; i++) { const x = (w / 10) * i; ctx.moveTo(x, 0); ctx.lineTo(x, h) }
+  for (let i = 1; i < 4; i++) { const y = (h / 4) * i; ctx.moveTo(0, y); ctx.lineTo(w, y) }
+  ctx.stroke()
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+  ctx.beginPath()
+  ctx.moveTo(0, mid); ctx.lineTo(w, mid)
+  ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h)
   ctx.stroke()
 
   const cycles = 5 * spec.freq * Math.max(props.speed, 0.5)

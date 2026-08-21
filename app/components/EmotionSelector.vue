@@ -8,5 +8,22 @@ const icons = { neutral: Meh, happy: Smile, sad: Frown, angry: Flame, excited: P
 const current = computed(() => emotions.find(item => item.id === props.modelValue))
 </script>
 <template>
-  <div><div class="mb-3 flex items-center justify-between"><label class="text-sm font-semibold text-surface-700">Emotion</label><span class="text-xs font-semibold text-primary-600">{{ current?.label }}</span></div><div class="grid grid-cols-4 gap-2"><button v-for="emotion in emotions" :key="emotion.id" class="key flex min-h-16 flex-col items-center justify-center gap-1.5 p-2 text-center" :data-on="modelValue === emotion.id" :title="emotion.description" @click="emit('update:modelValue', emotion.id)"><component :is="icons[emotion.id]" :size="18" /><span class="text-[.68rem] font-semibold">{{ emotion.label }}</span></button></div></div>
+  <div>
+    <div class="mb-3 flex items-center justify-between">
+      <p class="engrave">Tone</p>
+      <span class="readout px-2.5 py-1 text-[0.7rem]" :style="{ color: current?.color }">{{ current?.label }}</span>
+    </div>
+    <div class="grid grid-cols-4 gap-2">
+      <button
+        v-for="emotion in emotions" :key="emotion.id"
+        class="keycap flex min-h-16 flex-col items-center justify-center gap-1.5 p-2 text-center"
+        :data-on="modelValue === emotion.id" :title="emotion.description"
+        :style="modelValue === emotion.id ? { '--accent': emotion.color } : {}"
+        @click="emit('update:modelValue', emotion.id)"
+      >
+        <component :is="icons[emotion.id]" :size="18" />
+        <span class="font-mono text-[0.62rem] font-medium uppercase tracking-wide">{{ emotion.label }}</span>
+      </button>
+    </div>
+  </div>
 </template>

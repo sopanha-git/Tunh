@@ -5,12 +5,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
 
-  // This project uses the Nuxt 3-style flat layout (app.vue, pages/, components/,
-  // composables/, assets/ at the project root). Nuxt 4 defaults srcDir to 'app/',
-  // so pin it back to the root, otherwise the real app is ignored in favour of
-  // the leftover app/ scaffold and '~/assets/css/main.css' fails to resolve.
-  srcDir: '.',
-
+  // Standard Nuxt 4 layout: app.vue, pages/, components/, composables/, layouts/,
+  // middleware/, assets/, and types/ live under app/ (the default srcDir). The
+  // server/ and public/ directories stay at the project root. `~`/`@` resolve to
+  // app/, so '~/assets/css/main.css' and '~/types' point inside app/.
   css: ['~/assets/css/main.css'],
 
   // Tailwind 4 is wired through its Vite plugin (CSS-first @theme config), so
@@ -59,8 +57,8 @@ export default defineNuxtConfig({
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        // Display: Bricolage Grotesque · Body: Inter · HUD/data: JetBrains Mono
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap' },
+        // Signal Desk type: Chakra Petch (display/engraved labels) · IBM Plex Sans (body) · IBM Plex Mono (telemetry)
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap' },
       ],
     },
   },

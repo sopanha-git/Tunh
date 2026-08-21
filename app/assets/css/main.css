@@ -1,45 +1,271 @@
 @import "tailwindcss";
 
+/* ── Signal Desk theme ──────────────────────────────────────────────
+   A tactile hardware voice instrument. Warm brushed-metal panels, an
+   action-orange constant, and a dark oscilloscope "screen" that glows
+   in the selected emotion's hue (--accent, set per-emotion at runtime). */
 @theme {
-  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --color-primary-50: #eef4ff; --color-primary-100: #dbe8ff; --color-primary-200: #bfd4ff;
-  --color-primary-300: #93b7ff; --color-primary-400: #6091fa; --color-primary-500: #386ee8;
-  --color-primary-600: #2857c7; --color-primary-700: #2348a3; --color-primary-800: #203e82;
-  --color-primary-900: #1f376b;
-  --color-surface-50: #f8fafc; --color-surface-100: #f1f5f9; --color-surface-200: #e2e8f0;
-  --color-surface-300: #cbd5e1; --color-surface-400: #94a3b8; --color-surface-500: #64748b;
-  --color-surface-600: #475569; --color-surface-700: #334155; --color-surface-800: #1e293b;
-  --color-surface-900: #0f172a; --color-surface-950: #07101f;
+  --font-display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Action orange — the machine's one bold constant (brand mark, GENERATE key, REC LED). */
+  --color-primary-50: #fef3ec; --color-primary-100: #fbe0cf; --color-primary-200: #f7c2a0;
+  --color-primary-300: #f19a66; --color-primary-400: #ee7233; --color-primary-500: #e7541d;
+  --color-primary-600: #c8410f; --color-primary-700: #a0350f; --color-primary-800: #7c2d12;
+  --color-primary-900: #5f260f;
+
+  /* Warm brushed-metal greys — the panel material (not cold slate, not cream). */
+  --color-surface-50: #faf9f5; --color-surface-100: #f1efe9; --color-surface-200: #e4e1d8;
+  --color-surface-300: #d2cdc1; --color-surface-400: #aba593; --color-surface-500: #837c6b;
+  --color-surface-600: #5e584b; --color-surface-700: #423e34; --color-surface-800: #2a2721;
+  --color-surface-900: #1b1915; --color-surface-950: #121009;
+
+  /* Scope screen — the dark CRT/LCD inset. */
+  --color-screen-900: #100f0a; --color-screen-800: #17150e; --color-screen-700: #221f14;
 }
 
 :root { --accent: #386ee8; }
 
 @layer base {
-  html { @apply bg-surface-50 antialiased; }
-  body { @apply m-0 bg-surface-50 font-sans text-surface-900; }
+  html { @apply antialiased; }
+  body {
+    @apply m-0 font-sans text-surface-900;
+    /* the desk sits on a warm concrete deck */
+    background:
+      radial-gradient(120% 80% at 50% -10%, #ece9e0 0%, #ddd9cd 55%, #d3cec1 100%) fixed;
+    min-height: 100vh;
+  }
   button, input, textarea { font: inherit; }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; }
-  ::selection { @apply bg-primary-100 text-primary-900; }
-  :focus-visible { @apply outline-2 outline-offset-2 outline-primary-500; }
+  ::selection { @apply bg-primary-200 text-primary-900; }
+  :focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
 }
 
 @layer components {
-  .panel, .card { @apply rounded-2xl border border-surface-200 bg-white shadow-sm; }
-  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.16em] text-surface-500; }
-  .hud { @apply font-mono text-[0.68rem] font-medium uppercase tracking-[0.12em] text-surface-500; }
-  .key { @apply rounded-xl border border-surface-200 bg-white text-surface-800 transition-colors hover:border-surface-300 hover:bg-surface-50; }
-  .key[data-on='true'] { @apply border-primary-500 bg-primary-50 text-primary-700; }
-  .readout { @apply rounded-lg border border-primary-200 bg-primary-50 font-mono text-primary-700; }
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-primary-600 bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:border-surface-300 disabled:bg-surface-300; }
-  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-surface-300 bg-white px-4 py-2.5 text-sm font-semibold text-surface-700 shadow-sm transition-colors hover:bg-surface-50; }
-  .input-field { @apply block w-full rounded-xl border border-surface-300 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-sm placeholder:text-surface-400 focus:border-primary-500 focus:outline-none; }
+  /* Brushed-metal panel — the console body. */
+  .panel, .card {
+    border-radius: 1.25rem;
+    background: linear-gradient(177deg, #faf9f5 0%, #f2f0ea 62%, #ece9e1 100%);
+    border: 1px solid var(--color-surface-300);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+      0 1px 2px rgba(27, 25, 21, 0.05),
+      0 18px 40px -20px rgba(27, 25, 21, 0.28);
+  }
+  /* Dark oscilloscope screen. Glow + scanlines layered by .screen children in markup. */
+  .screen {
+    position: relative;
+    border-radius: 1rem;
+    background:
+      radial-gradient(130% 120% at 50% -20%, var(--color-screen-700) 0%, var(--color-screen-800) 45%, var(--color-screen-900) 100%);
+    border: 1px solid #000;
+    box-shadow:
+      inset 0 2px 14px rgba(0, 0, 0, 0.85),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 1px 0 rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+  }
+  /* CRT scanlines + a top accent bloom, painted over screen contents. */
+  .screen::after {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
+      radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+    mix-blend-mode: screen;
+    opacity: 0.6;
+  }
+  .screen canvas { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 65%, transparent)); }
+
+  /* Tactile key-cap. [data-on] lights in the emotion accent. */
+  .keycap {
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, #fcfbf8, #ece9e1);
+    border: 1px solid var(--color-surface-300);
+    color: var(--color-surface-700);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 1px 0 var(--color-surface-300),
+      0 2px 4px rgba(27, 25, 21, 0.10);
+    transition: transform 0.06s ease, box-shadow 0.14s ease, border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
+  }
+  .keycap:hover { border-color: var(--color-surface-400); }
+  .keycap:active { transform: translateY(1px); box-shadow: inset 0 1px 3px rgba(27, 25, 21, 0.18); }
+  .keycap[data-on="true"] {
+    border-color: color-mix(in srgb, var(--accent) 60%, #fff);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #fff), color-mix(in srgb, var(--accent) 7%, #fff));
+    color: color-mix(in srgb, var(--accent) 62%, #2a2721);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent),
+      0 2px 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  /* Engraved label — etched into the metal. */
+  .engrave, .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-surface-500);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+
+  /* Incised divider. */
+  .groove {
+    height: 0; border: 0;
+    border-top: 1px solid var(--color-surface-300);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  /* Slotted corner screw. */
+  .screw {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #f6f4ef 0%, #cbc6ba 62%, #a39c8c 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.85), 0 1px 1px rgba(0, 0, 0, 0.18);
+    position: relative; flex: none;
+  }
+  .screw::after {
+    content: ""; position: absolute; inset: 4px 1.5px;
+    border-top: 1px solid rgba(0, 0, 0, 0.30);
+    transform: rotate(42deg);
+  }
+
+  /* Mono readout chip on a light panel. */
+  .readout {
+    font-family: var(--font-mono);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-surface-300);
+    background: var(--color-surface-50);
+    color: var(--color-surface-700);
+    box-shadow: inset 0 1px 2px rgba(27, 25, 21, 0.05);
+  }
+
+  /* HUD telemetry text on the dark screen. */
+  .hud {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 42%, #cbc3b2);
+  }
+
+  /* GENERATE — the big orange action key. */
+  .btn-action {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+    border-radius: 0.9rem;
+    padding: 1rem 1.5rem;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    background: linear-gradient(180deg, #f0672e 0%, #e7541d 55%, #cb440f 100%);
+    border: 1px solid #b23c0e;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -3px 6px rgba(120, 30, 0, 0.35),
+      0 3px 0 #9c3a12,
+      0 8px 18px -6px rgba(200, 65, 15, 0.55);
+    transition: transform 0.07s ease, box-shadow 0.14s ease, filter 0.14s ease;
+  }
+  .btn-action:hover:not(:disabled) { filter: brightness(1.05); }
+  .btn-action:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: inset 0 1px 4px rgba(120, 30, 0, 0.55), 0 1px 0 #9c3a12;
+  }
+  .btn-action:disabled {
+    background: linear-gradient(180deg, #cfcabe, #bab4a6);
+    border-color: #a79f8f; color: #efece4;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4); transform: none;
+  }
+
+  /* Primary CTA (login / admin) — compact action key. */
+  .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.875rem; font-weight: 600; letter-spacing: 0.02em;
+    color: #fff;
+    background: linear-gradient(180deg, #f0672e 0%, #e7541d 55%, #cb440f 100%);
+    border: 1px solid #b23c0e;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 0 #9c3a12, 0 6px 14px -6px rgba(200, 65, 15, 0.5);
+    transition: transform 0.07s ease, box-shadow 0.14s ease, filter 0.14s ease;
+  }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.05); }
+  .btn-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px 3px rgba(120, 30, 0, 0.5); }
+  .btn-primary:disabled { background: linear-gradient(180deg, #cfcabe, #bab4a6); border-color: #a79f8f; box-shadow: none; transform: none; }
+
+  /* Secondary — ghost metal key. */
+  .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem; font-weight: 600;
+    color: var(--color-surface-700);
+    background: linear-gradient(180deg, #fcfbf8, #ece9e1);
+    border: 1px solid var(--color-surface-300);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 3px rgba(27, 25, 21, 0.08);
+    transition: transform 0.06s ease, border-color 0.14s ease, background 0.14s ease;
+  }
+  .btn-secondary:hover { border-color: var(--color-surface-400); }
+  .btn-secondary:active { transform: translateY(1px); }
+
+  /* Inset metal input. */
+  .input-field {
+    display: block; width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-surface-300);
+    background: var(--color-surface-50);
+    box-shadow: inset 0 1px 2px rgba(27, 25, 21, 0.07);
+    color: var(--color-surface-900);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.875rem;
+  }
+  .input-field::placeholder { color: var(--color-surface-400); }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: inset 0 1px 2px rgba(27, 25, 21, 0.07), 0 0 0 3px var(--color-primary-100);
+  }
 }
 
-input[type='range'].console-range { appearance: none; width: 100%; height: 5px; border-radius: 999px; background: #dbe3ef; }
-input[type='range'].console-range::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .22); }
-input[type='range'].console-range::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; }
+/* Console fader — inset groove, metallic thumb with accent ring. */
+input[type="range"].console-range {
+  appearance: none; width: 100%; height: 6px; border-radius: 999px;
+  background: linear-gradient(180deg, #cfcabd, #e6e2d8);
+  box-shadow: inset 0 1px 2px rgba(27, 25, 21, 0.25);
+}
+input[type="range"].console-range::-webkit-slider-thumb {
+  appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fdfcf9, #d7d2c6 70%, #b4ad9d);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--accent), 0 2px 4px rgba(27, 25, 21, 0.35);
+  cursor: pointer;
+}
+input[type="range"].console-range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fdfcf9, #d7d2c6 70%, #b4ad9d);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--accent), 0 2px 4px rgba(27, 25, 21, 0.35);
+  cursor: pointer;
+}
 
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+/* Screen power-on: a scanline sweep + trace fade when the desk loads. */
+@keyframes screen-boot {
+  0% { opacity: 0; transform: scaleY(0.4); filter: brightness(2.4); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scaleY(1); filter: brightness(1); }
+}
+.screen-boot { animation: screen-boot 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: center; }
+
+@keyframes led-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.led-blink { animation: led-blink 1s steps(1, end) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
