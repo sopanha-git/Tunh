@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
@@ -11,36 +13,31 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // Nuxt manages its own PostCSS pipeline and ignores a root postcss.config.*,
-  // so Tailwind/autoprefixer must be declared here to actually run.
-  postcss: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
+  // Tailwind 4 is wired through its Vite plugin (CSS-first @theme config), so
+  // there is no tailwind.config.js nor PostCSS config needed anymore.
+  vite: {
+    plugins: [tailwindcss()],
   },
-  
 
-  
   modules: [],
-  
+
   typescript: {
     strict: true,
     typeCheck: false,
   },
-  
+
   runtimeConfig: {
     // Private keys (only available on server-side)
     voiceApiKey: process.env.VOICE_API_KEY || '',
     voiceApiUrl: process.env.VOICE_API_URL || '',
-    
+
     // Public keys (exposed to client-side)
     public: {
       appName: 'Tunh',
       appVersion: '1.0.0',
     },
   },
-  
+
   app: {
     head: {
       title: 'Tunh - AI Text-to-Voice',
