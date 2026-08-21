@@ -1,15 +1,17 @@
 <template>
-  <NuxtPage />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 // Global app configuration
 useHead({
   htmlAttrs: {
-    lang: 'en',
+    lang: "en",
   },
   bodyAttrs: {
-    class: 'antialiased',
+    class: "antialiased",
   },
-})
+});
 </script>

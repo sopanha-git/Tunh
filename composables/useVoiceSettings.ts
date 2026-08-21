@@ -1,19 +1,20 @@
 import type { VoiceSettings, VoiceCharacter, VoiceEmotion, VoiceSpeed, EmotionConfig, CharacterConfig, SpeedConfig } from '~/types'
 
-// Emotion configurations
+// Emotion configurations. `color` is the signal hue this emotion casts across
+// the whole console (the interface retints to the selected emotion).
 export const emotions: EmotionConfig[] = [
-  { id: 'neutral', label: 'Neutral', icon: '😐', description: 'Natural, balanced tone' },
-  { id: 'happy', label: 'Happy', icon: '😊', description: 'Cheerful and upbeat' },
-  { id: 'sad', label: 'Sad', icon: '😢', description: 'Melancholic and somber' },
-  { id: 'angry', label: 'Angry', icon: '😠', description: 'Intense and frustrated' },
-  { id: 'excited', label: 'Excited', icon: '🤩', description: 'Enthusiastic and energetic' },
-  { id: 'calm', label: 'Calm', icon: '😌', description: 'Peaceful and relaxed' },
-  { id: 'friendly', label: 'Friendly', icon: '🙂', description: 'Warm and approachable' },
-  { id: 'serious', label: 'Serious', icon: '😐', description: 'Professional and grave' },
-  { id: 'fearful', label: 'Fearful', icon: '😨', description: 'Anxious and worried' },
-  { id: 'romantic', label: 'Romantic', icon: '😍', description: 'Loving and tender' },
-  { id: 'confident', label: 'Confident', icon: '😎', description: 'Self-assured and bold' },
-  { id: 'energetic', label: 'Energetic', icon: '⚡', description: 'Dynamic and lively' },
+  { id: 'neutral', label: 'Neutral', icon: '😐', description: 'Natural, balanced tone', color: '#6FB3C0' },
+  { id: 'happy', label: 'Happy', icon: '😊', description: 'Cheerful and upbeat', color: '#F3B02C' },
+  { id: 'sad', label: 'Sad', icon: '😢', description: 'Melancholic and somber', color: '#6E86C8' },
+  { id: 'angry', label: 'Angry', icon: '😠', description: 'Intense and frustrated', color: '#E14B3B' },
+  { id: 'excited', label: 'Excited', icon: '🤩', description: 'Enthusiastic and energetic', color: '#FF5CA8' },
+  { id: 'calm', label: 'Calm', icon: '😌', description: 'Peaceful and relaxed', color: '#34B79A' },
+  { id: 'friendly', label: 'Friendly', icon: '🙂', description: 'Warm and approachable', color: '#F0894B' },
+  { id: 'serious', label: 'Serious', icon: '😐', description: 'Professional and grave', color: '#98A6B8' },
+  { id: 'fearful', label: 'Fearful', icon: '😨', description: 'Anxious and worried', color: '#9D77E0' },
+  { id: 'romantic', label: 'Romantic', icon: '😍', description: 'Loving and tender', color: '#EA6A9C' },
+  { id: 'confident', label: 'Confident', icon: '😎', description: 'Self-assured and bold', color: '#3E9BD6' },
+  { id: 'energetic', label: 'Energetic', icon: '⚡', description: 'Dynamic and lively', color: '#B7E24A' },
 ]
 
 // Character configurations

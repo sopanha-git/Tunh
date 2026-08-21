@@ -5,7 +5,6 @@ import type { VoiceEmotion } from '~/types'
 interface Props {
   modelValue: VoiceEmotion
 }
-
 interface Emits {
   (e: 'update:modelValue', value: VoiceEmotion): void
 }
@@ -13,59 +12,85 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const selectEmotion = (emotionId: VoiceEmotion) => {
-  emit('update:modelValue', emotionId)
-}
+const selectEmotion = (id: VoiceEmotion) => emit('update:modelValue', id)
 
-// Group emotions for display
-const emotionGroups = [
-  emotions.slice(0, 4),   // First row
-  emotions.slice(4, 8),   // Second row
-  emotions.slice(8, 12),  // Third row
-]
+const current = computed(() => emotions.find((e) => e.id === props.modelValue))
 </script>
 
 <template>
   <div class="w-full">
-    <label class="block text-sm font-semibold text-surface-700 mb-3">
-      Emotion
-    </label>
-    
-    <div class="space-y-2">
-      <div
-        v-for="(group, groupIndex) in emotionGroups"
-        :key="groupIndex"
-        class="grid grid-cols-4 gap-2"
+    <div class="flex items-center justify-between mb-3">
+      <label class="eyebrow">Emotion</label>
+      <span class="hud text-accent">{{ current?.label }}</span>
+    </div>
+
+    <!-- Spectrum tuner: 12 signal hues, the active one lit and raised. -->
+    <div class="spectrum">
+      <button
+        v-for="emotion in emotions"
+        :key="emotion.id"
+        :title="emotion.label"
+        :aria-label="emotion.label"
+        :aria-pressed="modelValue === emotion.id"
+        @click="selectEmotion(emotion.id)"
+        class="tuner"
+        :style="{ '--c': emotion.color }"
       >
-        <button
-          v-for="emotion in group"
-          :key="emotion.id"
-          @click="selectEmotion(emotion.id)"
-          class="relative flex flex-col items-center p-3 border-2 rounded-xl transition-all duration-200"
-          :class="{
-            'border-primary-500 bg-primary-50': modelValue === emotion.id,
-            'border-surface-200 bg-white hover:border-surface-300': modelValue !== emotion.id,
-          }"
-          :title="emotion.description"
-        >
-          <!-- Icon -->
-          <span class="text-2xl mb-1">{{ emotion.icon }}</span>
-          
-          <!-- Label -->
-          <span
-            class="text-xs font-medium text-center"
-            :class="modelValue === emotion.id ? 'text-primary-700' : 'text-surface-700'"
-          >
-            {{ emotion.label }}
-          </span>
-          
-          <!-- Active indicator dot -->
-          <div
-            v-if="modelValue === emotion.id"
-            class="absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full border-2 border-white"
-          />
-        </button>
+        <span class="tick" :class="{ on: modelValue === emotion.id }" />
+      </button>
+    </div>
+
+    <!-- Readout for the tuned emotion -->
+    <div class="mt-4 flex items-center gap-3">
+      <span
+        class="grid place-items-center w-11 h-11 rounded-xl text-xl shrink-0"
+        :style="{
+          background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
+        }"
+      >
+        {{ current?.icon }}
+      </span>
+      <div class="min-w-0">
+        <p class="font-display font-semibold text-sm text-text leading-tight">{{ current?.label }}</p>
+        <p class="text-xs text-muted truncate">{{ current?.description }}</p>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.spectrum {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 64px;
+  padding: 0 2px;
+}
+.tuner {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+}
+.tick {
+  width: 100%;
+  height: 38%;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--c) 42%, transparent);
+  transition: height 260ms ease, background 260ms ease, box-shadow 260ms ease;
+}
+.tuner:hover .tick {
+  height: 66%;
+  background: color-mix(in srgb, var(--c) 70%, transparent);
+}
+.tick.on {
+  height: 100%;
+  background: var(--c);
+  box-shadow: 0 0 16px -2px var(--c);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tick { transition: none; }
+}
+</style>

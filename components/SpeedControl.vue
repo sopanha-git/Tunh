@@ -34,15 +34,12 @@ const currentSpeedLabel = computed(() => {
 <template>
   <div class="w-full">
     <div class="flex items-center justify-between mb-3">
-      <label class="text-sm font-semibold text-surface-700">
-        Speed
-      </label>
-      <span class="text-sm font-medium text-primary-600 bg-primary-50 px-3 py-1 rounded-full">
-        {{ modelValue }}x — {{ currentSpeedLabel }}
+      <label class="eyebrow">Speed</label>
+      <span class="readout px-3 py-1 text-xs">
+        {{ modelValue.toFixed(2) }}× · {{ currentSpeedLabel }}
       </span>
     </div>
-    
-    <!-- Slider -->
+
     <div class="relative pt-1">
       <input
         v-model.number="speedValue"
@@ -50,29 +47,24 @@ const currentSpeedLabel = computed(() => {
         :min="0.5"
         :max="2.0"
         :step="0.25"
-        class="w-full h-2 bg-surface-200 rounded-lg appearance-none cursor-pointer accent-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        class="console-range"
       />
-      
-      <!-- Tick marks -->
-      <div class="flex justify-between mt-2 text-xs text-surface-400">
-        <span>0.5x</span>
-        <span>1.0x</span>
-        <span>1.5x</span>
-        <span>2.0x</span>
+      <div class="flex justify-between mt-3 hud text-[0.6rem]">
+        <span>0.5×</span>
+        <span>1.0×</span>
+        <span>1.5×</span>
+        <span>2.0×</span>
       </div>
     </div>
 
-    <!-- Preset buttons -->
     <div class="flex flex-wrap gap-2 mt-4">
       <button
         v-for="speed in speeds"
         :key="speed.value"
+        :data-on="modelValue === speed.value"
         @click="emit('update:modelValue', speed.value)"
-        class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200"
-        :class="{
-          'bg-primary-100 text-primary-700 ring-2 ring-primary-500': modelValue === speed.value,
-          'bg-surface-100 text-surface-600 hover:bg-surface-200': modelValue !== speed.value,
-        }"
+        class="key px-3 py-1.5 text-xs font-medium"
+        :class="modelValue === speed.value ? 'text-accent' : 'text-muted'"
       >
         {{ speed.label }}
       </button>

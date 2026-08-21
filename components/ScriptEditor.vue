@@ -51,19 +51,17 @@ defineExpose({ focus, clearText })
   <div class="w-full">
     <!-- Label and counter -->
     <div class="flex items-center justify-between mb-3">
-      <label class="text-sm font-semibold text-surface-700">
-        Script
-      </label>
-      <div class="flex items-center gap-3 text-xs text-surface-500">
-        <span :class="{ 'text-amber-600 font-medium': isNearLimit, 'text-red-600 font-medium': isOverLimit }">
-          {{ characterCount.toLocaleString() }} / {{ maxLength.toLocaleString() }} characters
+      <label class="eyebrow">Script</label>
+      <div class="flex items-center gap-2 hud">
+        <span :class="{ 'text-amber-400': isNearLimit && !isOverLimit, 'text-red-400': isOverLimit }">
+          {{ characterCount.toLocaleString() }}/{{ maxLength.toLocaleString() }}
         </span>
-        <span class="text-surface-400">|</span>
+        <span class="text-faint">·</span>
         <span>{{ wordCount.toLocaleString() }} words</span>
       </div>
     </div>
 
-    <!-- Textarea -->
+    <!-- Teleprompter -->
     <div class="relative">
       <textarea
         ref="textareaRef"
@@ -71,16 +69,15 @@ defineExpose({ focus, clearText })
         @input="updateText"
         rows="8"
         :maxlength="maxLength"
-        placeholder="Enter your script here...&#10;&#10;Example:&#10;Hello everyone, welcome to our channel. Today we are going to talk about an exciting new topic."
-        class="w-full px-4 py-4 text-base text-surface-900 bg-white border border-surface-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-y min-h-[200px] transition-all duration-200 placeholder:text-surface-400"
-        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': isOverLimit }"
+        placeholder="Type the words you want spoken…&#10;&#10;Hello everyone, welcome back. Today we're talking about something worth hearing."
+        class="w-full px-5 py-4 text-lg leading-relaxed text-text bg-booth/60 border border-line rounded-xl resize-y min-h-[210px] transition-colors duration-200 placeholder:text-faint focus:border-accent focus:outline-none"
+        :class="{ 'border-red-500/60': isOverLimit }"
       />
-      
-      <!-- Clear button -->
+
       <button
         v-if="modelValue"
         @click="clearText"
-        class="absolute top-3 right-3 p-1.5 text-surface-400 hover:text-surface-600 hover:bg-surface-100 rounded-lg transition-all duration-200"
+        class="absolute top-3 right-3 p-1.5 text-muted hover:text-text rounded-lg transition-colors"
         title="Clear text"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,22 +86,21 @@ defineExpose({ focus, clearText })
       </button>
     </div>
 
-    <!-- Progress bar -->
-    <div class="mt-2 h-1 bg-surface-200 rounded-full overflow-hidden">
+    <!-- Level meter -->
+    <div class="mt-2.5 h-0.5 bg-line rounded-full overflow-hidden">
       <div
         class="h-full transition-all duration-300 rounded-full"
         :class="{
-          'bg-primary-500': !isNearLimit && !isOverLimit,
-          'bg-amber-500': isNearLimit && !isOverLimit,
+          'bg-accent': !isNearLimit && !isOverLimit,
+          'bg-amber-400': isNearLimit && !isOverLimit,
           'bg-red-500': isOverLimit,
         }"
         :style="{ width: `${Math.min((characterCount / maxLength) * 100, 100)}%` }"
       />
     </div>
 
-    <!-- Hint -->
-    <p class="mt-2 text-xs text-surface-500">
-      Tip: Use [Emotion] tags to apply different emotions to specific phrases. Example: [Excited] Wow! [Calm] Let's relax.
+    <p class="mt-3 text-xs text-muted">
+      Tip: use punctuation for natural pauses — commas breathe, periods land.
     </p>
   </div>
 </template>

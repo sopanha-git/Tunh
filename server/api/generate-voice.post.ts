@@ -1,45 +1,55 @@
-import type { TextToSpeechRequest, TextToSpeechResponse } from '~/types'
+import type { TextToSpeechRequest, TextToSpeechResponse, VoiceEmotion } from '~/types'
+
+const MAX_TEXT_LENGTH = 5000
+const VALID_CHARACTERS = ['male', 'female'] as const
+const VALID_EMOTIONS: VoiceEmotion[] = [
+  'neutral', 'happy', 'sad', 'angry', 'excited', 'calm',
+  'friendly', 'serious', 'fearful', 'romantic', 'confident', 'energetic',
+]
+
+// Validate the untrusted request body. Returns an error message, or null if valid.
+// Every field is type-checked here rather than trusting the declared TS types,
+// since the request body is attacker-controlled.
+function validateBody(body: unknown): string | null {
+  if (!body || typeof body !== 'object') {
+    return 'Invalid request body'
+  }
+
+  const { text, character, emotion, speed } = body as Record<string, unknown>
+
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    return 'Text is required'
+  }
+  if (text.length > MAX_TEXT_LENGTH) {
+    return `Text exceeds maximum length of ${MAX_TEXT_LENGTH} characters`
+  }
+  if (typeof character !== 'string' || !VALID_CHARACTERS.includes(character as any)) {
+    return 'Valid character (male or female) is required'
+  }
+  if (typeof emotion !== 'string' || !VALID_EMOTIONS.includes(emotion as VoiceEmotion)) {
+    return 'Valid emotion is required'
+  }
+  if (typeof speed !== 'number' || Number.isNaN(speed) || speed < 0.5 || speed > 2.0) {
+    return 'Speed must be between 0.5 and 2.0'
+  }
+
+  return null
+}
 
 export default defineEventHandler(async (event): Promise<TextToSpeechResponse> => {
+  // Validate the request up front. Validation failures are client errors (400),
+  // kept separate from the try/catch below so their status codes are actually
+  // sent and they are not logged as server errors.
+  const rawBody = await readBody(event)
+  const validationError = validateBody(rawBody)
+  if (validationError) {
+    setResponseStatus(event, 400)
+    return { success: false, error: validationError }
+  }
+
+  const body = rawBody as TextToSpeechRequest
+
   try {
-    const body = await readBody<TextToSpeechRequest>(event)
-    
-    // Validate request
-    if (!body || !body.text) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Text is required',
-      })
-    }
-
-    if (body.text.length > 5000) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Text exceeds maximum length of 5000 characters',
-      })
-    }
-
-    if (!body.character || !['male', 'female'].includes(body.character)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Valid character (male or female) is required',
-      })
-    }
-
-    if (!body.emotion) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Emotion is required',
-      })
-    }
-
-    if (!body.speed || body.speed < 0.5 || body.speed > 2.0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Speed must be between 0.5 and 2.0',
-      })
-    }
-
     // Get runtime config
     const config = useRuntimeConfig()
 
@@ -89,12 +99,14 @@ export default defineEventHandler(async (event): Promise<TextToSpeechResponse> =
     }
 
   } catch (error: any) {
+    // Only genuine generation failures reach here now that validation is
+    // handled above, so this is a real server-side error.
     console.error('Voice generation error:', error)
-    
-    // Return user-friendly error
+
+    setResponseStatus(event, 500)
     return {
       success: false,
-      error: error.statusMessage || error.message || 'Failed to generate voice. Please try again.',
+      error: 'Failed to generate voice. Please try again.',
     }
   }
 })

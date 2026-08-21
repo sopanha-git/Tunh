@@ -25,7 +25,7 @@ const handleClick = () => {
   <button
     @click="handleClick"
     :disabled="isGenerating || isDisabled"
-    class="w-full btn-primary py-4 text-lg font-semibold rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 disabled:shadow-none transform hover:-translate-y-0.5 active:translate-y-0"
+    class="generate-key group w-full py-4 text-lg font-display font-semibold rounded-2xl flex items-center justify-center gap-3 text-ink transition-all duration-200 disabled:cursor-not-allowed active:translate-y-px"
   >
     <span v-if="isGenerating" class="flex items-center justify-center gap-3">
       <!-- Animated waveform -->
@@ -62,3 +62,25 @@ const handleClick = () => {
     </span>
   </button>
 </template>
+
+<style scoped>
+.generate-key {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--accent) 92%, white),
+    var(--accent));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent),
+    0 18px 40px -18px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.generate-key:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent),
+    0 22px 46px -16px color-mix(in srgb, var(--accent) 90%, transparent);
+}
+.generate-key:disabled {
+  background: linear-gradient(180deg, #202832, #1a212a);
+  color: var(--faint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+</style>
