@@ -34,7 +34,7 @@ const currentSpeedLabel = computed(() => {
 <template>
   <div class="w-full">
     <div class="flex items-center justify-between mb-3">
-      <label class="eyebrow">Speed</label>
+      <label class="text-sm font-semibold text-surface-700">Speed</label>
       <span class="readout px-3 py-1 text-xs">
         {{ modelValue.toFixed(2) }}× · {{ currentSpeedLabel }}
       </span>
@@ -49,7 +49,7 @@ const currentSpeedLabel = computed(() => {
         :step="0.25"
         class="console-range"
       />
-      <div class="flex justify-between mt-3 hud text-[0.6rem]">
+      <div class="mt-3 flex justify-between text-[0.68rem] text-surface-400">
         <span>0.5×</span>
         <span>1.0×</span>
         <span>1.5×</span>
@@ -64,7 +64,7 @@ const currentSpeedLabel = computed(() => {
         :data-on="modelValue === speed.value"
         @click="emit('update:modelValue', speed.value)"
         class="key px-3 py-1.5 text-xs font-medium"
-        :class="modelValue === speed.value ? 'text-accent' : 'text-muted'"
+        :class="modelValue === speed.value ? 'text-primary-700' : 'text-surface-600'"
       >
         {{ speed.label }}
       </button>

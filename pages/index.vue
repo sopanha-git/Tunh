@@ -1,254 +1,58 @@
 <script setup lang="ts">
-import { useVoiceSettings, defaultVoiceSettings } from '~/composables/useVoiceSettings'
+import { AudioLines, Bell, CircleHelp, LayoutDashboard, LogOut, RotateCcw, Sparkles } from 'lucide-vue-next'
+import { defaultVoiceSettings, useVoiceSettings } from '~/composables/useVoiceSettings'
 import { useTextToSpeech } from '~/composables/useTextToSpeech'
 import type { TextToSpeechRequest } from '~/types'
 
-useHead({ title: 'Tunh — Voice Console' })
-
-// State
+useHead({ title: 'Voice Studio · Tunh' })
 const script = ref('')
 const { settings, setCharacter, setEmotion, setSpeed, currentEmotion } = useVoiceSettings()
 const { status, error, audioUrl, audioDuration, isGenerating, generateVoice, reset, downloadAudio } = useTextToSpeech()
-
-// The whole console tunes to the selected emotion's hue.
-const accent = computed(() => currentEmotion.value?.color || '#6FB3C0')
-
-// Audio player refs
+const { user, clear } = useUserSession()
+const accent = computed(() => currentEmotion.value?.color || '#386ee8')
 const audioElement = ref<HTMLAudioElement | null>(null)
-const playerState = ref({
-  isPlaying: false,
-  currentTime: 0,
-  duration: 0,
-  volume: 1.0,
-  isLoading: false,
-})
+const playerState = ref({ isPlaying: false, currentTime: 0, duration: 0, volume: 1, isLoading: false })
+const statusLabel = computed(() => ({ validating:'Checking', generating:'Generating', success:'Ready', error:'Needs attention', idle:'Ready' }[status.value]))
 
-const hasAudio = computed(() => !!audioUrl.value)
-const hasError = computed(() => status.value === 'error')
-const isSuccess = computed(() => status.value === 'success')
-
-// Instrument readout for the hero
-const statusLabel = computed(() => {
-  switch (status.value) {
-    case 'validating': return 'CHECKING'
-    case 'generating': return 'SYNTHESIZING'
-    case 'success': return 'SIGNAL READY'
-    case 'error': return 'FAULT'
-    default: return script.value.trim() ? 'ARMED' : 'STANDBY'
-  }
-})
-// The mock renders a 440Hz tone; speed shifts the apparent pitch.
-const toneHz = computed(() => Math.round(440 * settings.value.speed))
-
-const handleGenerate = async () => {
-  const request: TextToSpeechRequest = {
-    text: script.value,
-    character: settings.value.character,
-    emotion: settings.value.emotion,
-    speed: settings.value.speed,
-  }
+async function handleGenerate() {
+  const request: TextToSpeechRequest = { text: script.value, character: settings.value.character, emotion: settings.value.emotion, speed: settings.value.speed }
   const response = await generateVoice(request)
-  if (response.success && response.audioUrl) {
-    nextTick(() => {
-      if (audioElement.value) {
-        audioElement.value.src = response.audioUrl!
-        audioElement.value.load()
-        playerState.value.duration = response.duration || 0
-      }
-    })
-  }
+  if (response.success && response.audioUrl) nextTick(() => { if (audioElement.value) { audioElement.value.src = response.audioUrl!; audioElement.value.load(); playerState.value.duration = response.duration || 0 } })
 }
-
-const togglePlay = () => {
-  if (!audioElement.value) return
-  if (playerState.value.isPlaying) {
-    audioElement.value.pause()
-    playerState.value.isPlaying = false
-  } else {
-    audioElement.value.play()
-    playerState.value.isPlaying = true
-  }
-}
-const handleSeek = (time: number) => {
-  if (audioElement.value) {
-    audioElement.value.currentTime = time
-    playerState.value.currentTime = time
-  }
-}
-const handleTimeUpdate = () => {
-  if (audioElement.value) playerState.value.currentTime = audioElement.value.currentTime
-}
-const handleEnded = () => {
-  playerState.value.isPlaying = false
-  playerState.value.currentTime = 0
-}
-const handleLoadedMetadata = () => {
-  if (audioElement.value) playerState.value.duration = audioElement.value.duration
-}
-
-const handleClear = () => {
-  script.value = ''
-  reset()
-  if (audioElement.value) {
-    audioElement.value.pause()
-    audioElement.value.src = ''
-  }
-}
-const handleResetSettings = () => {
-  setCharacter(defaultVoiceSettings.character)
-  setEmotion(defaultVoiceSettings.emotion)
-  setSpeed(defaultVoiceSettings.speed)
-}
+function togglePlay() { if (!audioElement.value) return; if (playerState.value.isPlaying) audioElement.value.pause(); else audioElement.value.play(); playerState.value.isPlaying = !playerState.value.isPlaying }
+function handleSeek(time: number) { if (audioElement.value) audioElement.value.currentTime = time; playerState.value.currentTime = time }
+function clearAll() { script.value = ''; reset(); audioElement.value?.pause() }
+function resetSettings() { setCharacter(defaultVoiceSettings.character); setEmotion(defaultVoiceSettings.emotion); setSpeed(defaultVoiceSettings.speed) }
+async function logout() { await $fetch('/api/auth/logout', { method: 'POST' }); await clear(); await navigateTo('/login') }
 </script>
 
 <template>
-  <div class="min-h-screen" :style="{ '--accent': accent }">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-20 border-b border-line/80 bg-booth/70 backdrop-blur-xl">
-      <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <span class="w-2.5 h-2.5 rounded-full bg-accent glow-accent" />
-          <span class="font-display font-extrabold tracking-tight text-lg text-text">TUNH</span>
-          <span class="hidden sm:inline eyebrow pt-0.5">Voice Console</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <span class="hidden sm:flex items-center gap-2 hud">
-            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-slow" />
-            {{ statusLabel }}
-          </span>
-          <button
-            @click="handleClear"
-            class="hud px-3 py-1.5 rounded-lg border border-line hover:border-line-2 hover:text-text transition-colors"
-          >
-            Clear
-          </button>
-        </div>
+  <div class="min-h-screen bg-surface-50" :style="{ '--accent': accent }">
+    <header class="border-b border-surface-200 bg-white">
+      <div class="mx-auto flex h-17 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <NuxtLink to="/" class="flex items-center gap-3"><span class="grid size-9 place-items-center rounded-xl bg-primary-600 text-white"><AudioLines :size="19" /></span><span class="font-display text-lg font-bold">Tunh</span></NuxtLink>
+        <span class="hidden h-5 w-px bg-surface-200 sm:block" /><span class="hidden text-sm font-medium text-surface-500 sm:block">Voice studio</span>
+        <div class="ml-auto flex items-center gap-1"><NuxtLink to="/admin" class="rounded-lg p-2 text-surface-500 hover:bg-surface-100" title="Dashboard"><LayoutDashboard :size="20" /></NuxtLink><button class="rounded-lg p-2 text-surface-500 hover:bg-surface-100" title="Help"><CircleHelp :size="20" /></button><button class="rounded-lg p-2 text-surface-500 hover:bg-surface-100" title="Notifications"><Bell :size="20" /></button><span class="mx-2 hidden text-sm font-medium sm:block">{{ user?.name }}</span><button class="rounded-lg p-2 text-surface-500 hover:bg-surface-100" title="Sign out" @click="logout"><LogOut :size="19" /></button></div>
       </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10">
-      <!-- Hero: the oscilloscope -->
-      <section class="panel overflow-hidden mb-6">
-        <div class="flex items-center justify-between px-6 pt-5">
-          <div>
-            <p class="eyebrow mb-1">Now tuning</p>
-            <h1 class="font-display text-3xl sm:text-[2.6rem] leading-none font-bold text-text">
-              {{ currentEmotion?.label }}
-              <span class="text-accent">voice</span>
-            </h1>
-          </div>
-          <div class="text-right hud leading-relaxed">
-            <div class="text-text/90">{{ toneHz }} Hz</div>
-            <div>{{ settings.speed.toFixed(2) }}×</div>
-          </div>
+    <main class="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
+      <header class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p class="text-sm font-semibold text-primary-600">Create audio</p><h1 class="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Bring your script to life</h1><p class="mt-2 text-sm text-surface-500">Choose a voice, shape the delivery, and generate a polished take.</p></div><div class="flex items-center gap-2"><span class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">{{ statusLabel }}</span><button class="btn-secondary" @click="clearAll"><RotateCcw :size="16" /> Clear</button></div></header>
+
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,.75fr)]">
+        <div class="space-y-5">
+          <section class="panel p-5 sm:p-6"><ScriptEditor v-model="script" @clear="script = ''" /></section>
+          <GenerateVoiceButton :is-generating="isGenerating" :is-disabled="!script.trim()" @generate="handleGenerate" />
+          <ErrorMessage v-if="status === 'error'" :message="error" />
+          <SuccessMessage v-if="status === 'success' && !audioUrl" message="Your voice is ready." />
+          <AudioResult v-if="audioUrl" :audio-url="audioUrl" :duration="audioDuration" :player-state="playerState" @play="togglePlay" @pause="togglePlay" @seek="handleSeek" @download="downloadAudio()" />
+          <audio ref="audioElement" class="hidden" @timeupdate="playerState.currentTime = audioElement?.currentTime || 0" @ended="playerState.isPlaying = false" @loadedmetadata="playerState.duration = audioElement?.duration || 0" />
         </div>
-
-        <div class="relative h-40 sm:h-52 mt-2">
-          <WaveformScope
-            :emotion="settings.emotion"
-            :speed="settings.speed"
-            :color="accent"
-            :active="isGenerating"
-          />
-          <!-- readout strip -->
-          <div class="absolute bottom-3 left-6 right-6 flex items-center justify-between hud">
-            <span>{{ statusLabel }}</span>
-            <span class="hidden sm:inline">{{ settings.character }} · {{ settings.emotion }}</span>
-          </div>
-        </div>
-      </section>
-
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <!-- Stage: script + generate + result -->
-        <div class="lg:col-span-3 space-y-6">
-          <section class="panel p-6">
-            <ScriptEditor v-model="script" @clear="script = ''" />
-          </section>
-
-          <GenerateVoiceButton
-            :is-generating="isGenerating"
-            :is-disabled="!script.trim()"
-            @generate="handleGenerate"
-          />
-
-          <ErrorMessage v-if="hasError" :message="error" />
-          <SuccessMessage v-if="isSuccess && !hasAudio" message="Signal ready." />
-
-          <AudioResult
-            v-if="hasAudio"
-            :audio-url="audioUrl"
-            :duration="audioDuration"
-            :player-state="playerState"
-            @play="togglePlay"
-            @pause="togglePlay"
-            @seek="handleSeek"
-            @download="downloadAudio()"
-          />
-
-          <audio
-            ref="audioElement"
-            @timeupdate="handleTimeUpdate"
-            @ended="handleEnded"
-            @loadedmetadata="handleLoadedMetadata"
-            class="hidden"
-          />
-        </div>
-
-        <!-- Control desk -->
-        <div class="lg:col-span-2 space-y-6">
-          <section class="panel p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="eyebrow">Control desk</h2>
-              <button
-                @click="handleResetSettings"
-                class="hud hover:text-accent transition-colors"
-              >
-                Reset
-              </button>
-            </div>
-
-            <div class="space-y-7">
-              <CharacterSelector
-                :model-value="settings.character"
-                @update:model-value="setCharacter"
-              />
-              <div class="h-px bg-line" />
-              <EmotionSelector
-                :model-value="settings.emotion"
-                @update:model-value="setEmotion"
-              />
-              <div class="h-px bg-line" />
-              <SpeedControl
-                :model-value="settings.speed"
-                @update:model-value="setSpeed"
-              />
-            </div>
-          </section>
-
-          <section class="panel p-6">
-            <h3 class="eyebrow mb-4">Booth notes</h3>
-            <ul class="space-y-3 text-sm text-muted">
-              <li class="flex gap-3">
-                <span class="mt-1.5 w-3 h-px bg-accent shrink-0" />
-                Punctuation becomes breath — it shapes the pauses.
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-1.5 w-3 h-px bg-accent shrink-0" />
-                The emotion you pick recolors the whole console.
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-1.5 w-3 h-px bg-accent shrink-0" />
-                Slower speeds read clearer; faster ones carry energy.
-              </li>
-            </ul>
-          </section>
-        </div>
+        <aside class="space-y-5">
+          <section class="panel p-5 sm:p-6"><div class="mb-6 flex items-center justify-between"><div><p class="eyebrow">Voice settings</p><h2 class="mt-1 font-display text-xl font-semibold">Direct the take</h2></div><button class="rounded-lg p-2 text-surface-500 hover:bg-surface-100" title="Reset settings" @click="resetSettings"><RotateCcw :size="17" /></button></div><div class="space-y-6"><CharacterSelector :model-value="settings.character" @update:model-value="setCharacter" /><hr class="border-surface-200" /><EmotionSelector :model-value="settings.emotion" @update:model-value="setEmotion" /><hr class="border-surface-200" /><SpeedControl :model-value="settings.speed" @update:model-value="setSpeed" /></div></section>
+          <section class="rounded-2xl border border-primary-200 bg-primary-50 p-5"><Sparkles :size="20" class="text-primary-600" /><h3 class="mt-3 font-semibold text-primary-900">A better sounding take</h3><p class="mt-2 text-sm leading-6 text-primary-800">Use commas for short breaths and full stops for deliberate pauses. Short paragraphs keep pacing natural.</p></section>
+        </aside>
       </div>
-
-      <footer class="mt-12 pt-6 border-t border-line flex items-center justify-between hud">
-        <span>Tunh · AI Text-to-Voice</span>
-        <span class="hidden sm:inline">Nuxt · TypeScript · Tailwind</span>
-      </footer>
     </main>
   </div>
 </template>

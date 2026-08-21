@@ -30,7 +30,6 @@ export interface VoiceSettings {
 export interface EmotionConfig {
   id: VoiceEmotion
   label: string
-  icon: string
   description: string
   color: string // signal hue used across the console for this emotion
 }
@@ -39,7 +38,6 @@ export interface EmotionConfig {
 export interface CharacterConfig {
   id: VoiceCharacter
   label: string
-  icon: string
   description: string
   voices: VoiceOption[]
 }

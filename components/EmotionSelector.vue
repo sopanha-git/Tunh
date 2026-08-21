@@ -1,96 +1,12 @@
 <script setup lang="ts">
+import { Annoyed, BicepsFlexed, Flame, Frown, Heart, Laugh, Meh, PartyPopper, ShieldCheck, Smile, Sparkles, Waves } from 'lucide-vue-next'
 import { emotions } from '~/composables/useVoiceSettings'
 import type { VoiceEmotion } from '~/types'
-
-interface Props {
-  modelValue: VoiceEmotion
-}
-interface Emits {
-  (e: 'update:modelValue', value: VoiceEmotion): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-const selectEmotion = (id: VoiceEmotion) => emit('update:modelValue', id)
-
-const current = computed(() => emotions.find((e) => e.id === props.modelValue))
+const props = defineProps<{ modelValue: VoiceEmotion }>()
+const emit = defineEmits<{ 'update:modelValue': [value: VoiceEmotion] }>()
+const icons = { neutral: Meh, happy: Smile, sad: Frown, angry: Flame, excited: PartyPopper, calm: Waves, friendly: Laugh, serious: Annoyed, fearful: ShieldCheck, romantic: Heart, confident: BicepsFlexed, energetic: Sparkles }
+const current = computed(() => emotions.find(item => item.id === props.modelValue))
 </script>
-
 <template>
-  <div class="w-full">
-    <div class="flex items-center justify-between mb-3">
-      <label class="eyebrow">Emotion</label>
-      <span class="hud text-accent">{{ current?.label }}</span>
-    </div>
-
-    <!-- Spectrum tuner: 12 signal hues, the active one lit and raised. -->
-    <div class="spectrum">
-      <button
-        v-for="emotion in emotions"
-        :key="emotion.id"
-        :title="emotion.label"
-        :aria-label="emotion.label"
-        :aria-pressed="modelValue === emotion.id"
-        @click="selectEmotion(emotion.id)"
-        class="tuner"
-        :style="{ '--c': emotion.color }"
-      >
-        <span class="tick" :class="{ on: modelValue === emotion.id }" />
-      </button>
-    </div>
-
-    <!-- Readout for the tuned emotion -->
-    <div class="mt-4 flex items-center gap-3">
-      <span
-        class="grid place-items-center w-11 h-11 rounded-xl text-xl shrink-0"
-        :style="{
-          background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
-          border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-        }"
-      >
-        {{ current?.icon }}
-      </span>
-      <div class="min-w-0">
-        <p class="font-display font-semibold text-sm text-text leading-tight">{{ current?.label }}</p>
-        <p class="text-xs text-muted truncate">{{ current?.description }}</p>
-      </div>
-    </div>
-  </div>
+  <div><div class="mb-3 flex items-center justify-between"><label class="text-sm font-semibold text-surface-700">Emotion</label><span class="text-xs font-semibold text-primary-600">{{ current?.label }}</span></div><div class="grid grid-cols-4 gap-2"><button v-for="emotion in emotions" :key="emotion.id" class="key flex min-h-16 flex-col items-center justify-center gap-1.5 p-2 text-center" :data-on="modelValue === emotion.id" :title="emotion.description" @click="emit('update:modelValue', emotion.id)"><component :is="icons[emotion.id]" :size="18" /><span class="text-[.68rem] font-semibold">{{ emotion.label }}</span></button></div></div>
 </template>
-
-<style scoped>
-.spectrum {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 64px;
-  padding: 0 2px;
-}
-.tuner {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: 100%;
-}
-.tick {
-  width: 100%;
-  height: 38%;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--c) 42%, transparent);
-  transition: height 260ms ease, background 260ms ease, box-shadow 260ms ease;
-}
-.tuner:hover .tick {
-  height: 66%;
-  background: color-mix(in srgb, var(--c) 70%, transparent);
-}
-.tick.on {
-  height: 100%;
-  background: var(--c);
-  box-shadow: 0 0 16px -2px var(--c);
-}
-@media (prefers-reduced-motion: reduce) {
-  .tick { transition: none; }
-}
-</style>

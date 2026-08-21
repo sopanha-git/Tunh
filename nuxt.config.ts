@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  modules: [],
+  modules: ['nuxt-auth-utils'],
 
   typescript: {
     strict: true,
@@ -27,6 +27,16 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    session: {
+      maxAge: 60 * 60 * 8,
+      cookie: {
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+      },
+    },
+    authEmail: process.env.NUXT_AUTH_EMAIL || (process.env.NODE_ENV === 'production' ? '' : 'admin@tunh.app'),
+    authPassword: process.env.NUXT_AUTH_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'tunh-demo'),
     // Private keys (only available on server-side)
     voiceApiKey: process.env.VOICE_API_KEY || '',
     voiceApiUrl: process.env.VOICE_API_URL || '',

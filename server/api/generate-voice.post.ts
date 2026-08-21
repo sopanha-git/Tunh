@@ -37,6 +37,7 @@ function validateBody(body: unknown): string | null {
 }
 
 export default defineEventHandler(async (event): Promise<TextToSpeechResponse> => {
+  await requireUserSession(event)
   // Validate the request up front. Validation failures are client errors (400),
   // kept separate from the try/catch below so their status codes are actually
   // sent and they are not logged as server errors.

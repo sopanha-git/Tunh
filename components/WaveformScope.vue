@@ -40,16 +40,6 @@ let cssW = 0
 let cssH = 0
 let energy = 0 // eased-in amplitude, so emotion changes glide rather than snap
 
-// Canvas gradients can't parse color-mix(); resolve the hex accent to rgba here.
-const hexToRgba = (hex: string, a: number): string => {
-  const m = hex.replace('#', '')
-  const n = m.length === 3 ? m.split('').map((c) => c + c).join('') : m
-  const r = parseInt(n.slice(0, 2), 16) || 0
-  const g = parseInt(n.slice(2, 4), 16) || 0
-  const b = parseInt(n.slice(4, 6), 16) || 0
-  return `rgba(${r}, ${g}, ${b}, ${a})`
-}
-
 const shapeFn = (s: Shape, p: number): number => {
   const t = p / (Math.PI * 2)
   const frac = t - Math.floor(t)
@@ -106,20 +96,18 @@ const frame = (advance: boolean) => {
     return mid - v * amp * edge
   }
 
-  // Soft filled body under the trace
+  // Flat, lightly tinted body under the trace.
   ctx.beginPath()
   ctx.moveTo(0, mid)
   for (let x = 0; x <= w; x += step) ctx.lineTo(x, sampleAt(x))
   ctx.lineTo(w, mid)
   ctx.closePath()
-  const grad = ctx.createLinearGradient(0, 0, 0, h)
-  grad.addColorStop(0, 'rgba(255,255,255,0)')
-  grad.addColorStop(0.5, hexToRgba(props.color, 0.22))
-  grad.addColorStop(1, 'rgba(255,255,255,0)')
-  ctx.fillStyle = grad
+  ctx.globalAlpha = 0.12
+  ctx.fillStyle = props.color
   ctx.fill()
+  ctx.globalAlpha = 1
 
-  // Glowing trace
+  // Crisp trace with no glow.
   ctx.beginPath()
   for (let x = 0; x <= w; x += step) {
     const y = sampleAt(x)
@@ -129,10 +117,7 @@ const frame = (advance: boolean) => {
   ctx.strokeStyle = props.color
   ctx.lineWidth = 2
   ctx.lineJoin = 'round'
-  ctx.shadowColor = props.color
-  ctx.shadowBlur = props.active ? 22 : 12
   ctx.stroke()
-  ctx.shadowBlur = 0
 
   if (advance) phase += (props.active ? 0.09 : 0.045) * Math.max(props.speed, 0.6)
 }
